@@ -1,1 +1,1 @@
-
+const weather = await getWeatherStatus();
