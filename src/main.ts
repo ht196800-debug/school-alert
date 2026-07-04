@@ -1,40 +1,105 @@
-const CHANNEL_ACCESS_TOKEN = Deno.env.get("LINE_CHANNEL_ACCESS_TOKEN");
-const USER_ID = Deno.env.get("LINE_USER_ID");
+// src/main.ts
 
-if (!CHANNEL_ACCESS_TOKEN) {
-  throw new Error("LINE_CHANNEL_ACCESS_TOKEN が設定されていません");
-}
+import { checkSchoolStatus } from "./school.ts";
+import { sendLineMessage } from "./line.ts";
 
-if (!USER_ID) {
-  throw new Error("LINE_USER_ID が設定されていません");
-}
+async function runCheck() {
+  console.log("School Alert Check Started");
 
-Deno.serve(async (req) => {
-  if (new URL(req.url).pathname === "/notify") {
-    const response = await fetch("https://api.line.me/v2/bot/message/push", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to: USER_ID,
-        messages: [
-          {
-            type: "text",
-            text: "🚨 School Alert のテスト通知です！",
-          },
-        ],
-      }),
-    });
+  try {
+    const result = await checkSchoolStatus();
 
-    if (!response.ok) {
-      const error = await response.text();
-      return new Response(error, { status: 500 });
+    if (result.notify) {
+      await sendLineMessage(result.message);
+      console.log("LINE通知送信完了");
+    } else {
+      console.log("通知不要");
     }
 
-    return new Response("LINE通知を送信しました。");
+    return result;
+  } catch (err) {
+    console.error(err);
+
+    await sendLineMessage(
+      "⚠️ School Alert エラー\n\n" +
+      String(err)
+    );
+
+    throw err;
+  }
+}
+
+// ---------- HTTP ----------
+
+Deno.serve(async (req) => {
+
+  const url = new URL(req.url);
+
+  switch (url.pathname) {
+
+    case "/":
+      return new Response("School Alert is running!");
+
+    case "/notify":
+      await sendLineMessage(
+        "🚨 School Alert のテスト通知です！"
+      );
+      return new Response("LINE通知を送信しました。");
+
+    case "/check":
+
+      const result = await runCheck();
+
+      return Response.json(result);
+
+    default:
+
+      return new Response("Not Found", {
+        status:404
+      });
+
   }
 
-  return new Response("School Alert is running!");
 });
+
+
+// ---------- Cron ----------
+
+// 毎日6:00
+Deno.cron(
+  "School Alert 6AM",
+  "0 6 * * *",
+  async () => {
+
+    console.log("6:00 Check");
+
+    await runCheck();
+
+  }
+);
+
+// 毎日8:00
+Deno.cron(
+  "School Alert 8AM",
+  "0 8 * * *",
+  async () => {
+
+    console.log("8:00 Check");
+
+    await runCheck();
+
+  }
+);
+
+// 毎日10:00
+Deno.cron(
+  "School Alert 10AM",
+  "0 10 * * *",
+  async () => {
+
+    console.log("10:00 Check");
+
+    await runCheck();
+
+  }
+);
