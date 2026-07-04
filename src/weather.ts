@@ -11,12 +11,7 @@ export interface WeatherResult {
   alerts: AreaAlert[];
 }
 
-/**
- * 気象庁JSON取得
- */
 async function fetchWeatherData() {
-
-  // ここは次回、本番URLへ変更します
   const url =
     "https://www.jma.go.jp/bosai/warning/data/warning/map.json";
 
@@ -27,54 +22,56 @@ async function fetchWeatherData() {
   }
 
   return await res.json();
-
 }
 
-/**
- * 対象地域
- */
 const TARGETS = [
-
   "奈良県北西部",
-  "奈良市西部",
+  "奈良市",
   "大阪市",
   "東部大阪",
   "東大阪市",
   "京都府南部"
-
 ];
 
-/**
- * 判定
- */
 export async function getWeatherStatus(): Promise<WeatherResult> {
-
   const json = await fetchWeatherData();
 
   const result: WeatherResult = {
-
     updated: new Date().toLocaleString("ja-JP"),
-
     alerts: []
-
   };
 
-  for (const area of TARGETS) {
+  // map.jsonの構造は「地域コードベース」なので全走査
+  const areas = json.areaTypes ?? [];
+
+  for (const target of TARGETS) {
+    let warning = false;
+    const warnings: string[] = [];
+
+    for (const areaType of areas) {
+      const areaList = areaType.areas ?? [];
+
+      for (const area of areaList) {
+        const name = area.name ?? "";
+
+        // 部分一致で地域判定
+        if (name.includes(target)) {
+          const w = area.warning || [];
+
+          if (Array.isArray(w) && w.length > 0) {
+            warning = true;
+            warnings.push(...w);
+          }
+        }
+      }
+    }
 
     result.alerts.push({
-
-      area,
-
-      warning: false,
-
-      warnings: []
-
+      area: target,
+      warning,
+      warnings
     });
-
   }
 
-  // 次回ここへ気象庁JSON解析を書く
-
   return result;
-
 }
