@@ -1,5 +1,8 @@
 // src/main.ts
 
+case "/":
+  return new Response("Version 2");
+
 import { checkSchoolStatus } from "./school.ts";
 import { sendLineMessage } from "./line.ts";
 
