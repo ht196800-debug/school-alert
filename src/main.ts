@@ -1,7 +1,5 @@
 // src/main.ts
 
-case "/":
-  return new Response("Version 2");
 
 import { checkSchoolStatus } from "./school.ts";
 import { sendLineMessage } from "./line.ts";
@@ -41,7 +39,7 @@ Deno.serve(async (req) => {
   switch (url.pathname) {
 
     case "/":
-      return new Response("School Alert is running!");
+      return new Response("version2");
 
     case "/notify":
       await sendLineMessage(
