@@ -61,6 +61,34 @@ Deno.serve(async (req) => {
 
   }
 
+
 });
+
+Deno.cron(
+  "School Alert 6AM",
+  "0 6 * * *",
+  async () => {
+    await runCheck();
+  }
+);
+
+
+
+Deno.cron(
+  "School Alert 8AM",
+  "0 8 * * *",
+  async () => {
+    await runCheck();
+  }
+);
+
+
+Deno.cron(
+  "School Alert 10AM",
+  "0 10 * * *",
+  async () => {
+    await runCheck();
+  }
+);
 
 
