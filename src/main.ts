@@ -1,9 +1,11 @@
 // src/main.ts
 
-
 import { checkSchoolStatus } from "./school.ts";
 import { sendLineMessage } from "./line.ts";
 
+// --------------------
+// 共通処理
+// --------------------
 async function runCheck() {
   console.log("School Alert Check Started");
 
@@ -22,61 +24,49 @@ async function runCheck() {
     console.error(err);
 
     await sendLineMessage(
-      "⚠️ School Alert エラー\n\n" +
-      String(err)
+      "⚠️ School Alert エラー\n\n" + String(err)
     );
 
     throw err;
   }
 }
 
-// ---------- HTTP ----------
-
+// --------------------
+// HTTPサーバ
+// --------------------
 Deno.serve(async (req) => {
-
   const url = new URL(req.url);
 
   switch (url.pathname) {
-
     case "/":
       return new Response("version2");
 
     case "/notify":
-      await sendLineMessage(
-        "🚨 School Alert のテスト通知です！"
-      );
+      await sendLineMessage("🚨 School Alert のテスト通知です！");
       return new Response("LINE通知を送信しました。");
 
     case "/check":
-
       const result = await runCheck();
-
       return Response.json(result);
 
     default:
-
-      return new Response("Not Found", {
-        status:404
-      });
-
+      return new Response("Not Found", { status: 404 });
   }
-
-
 });
-import { runCheck } from "./check.ts";
 
-// 毎朝6時（日本時間）
-Deno.cron("morning-check", "0 6 * * *", async () => {
+// --------------------
+// Cron（自動実行）
+// --------------------
+
+// ※日本時間注意（UTC基準）
+Deno.cron("morning-check-6", "0 21 * * *", async () => {
   await runCheck();
 });
 
-// 8時
-Deno.cron("morning-check-2", "0 8 * * *", async () => {
+Deno.cron("morning-check-8", "0 23 * * *", async () => {
   await runCheck();
 });
 
-// 10時
-Deno.cron("morning-check-3", "0 10 * * *", async () => {
+Deno.cron("morning-check-10", "0 1 * * *", async () => {
   await runCheck();
 });
-
