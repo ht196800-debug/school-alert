@@ -63,5 +63,20 @@ Deno.serve(async (req) => {
 
 
 });
+import { runCheck } from "./check.ts";
 
+// 毎朝6時（日本時間）
+Deno.cron("morning-check", "0 6 * * *", async () => {
+  await runCheck();
+});
+
+// 8時
+Deno.cron("morning-check-2", "0 8 * * *", async () => {
+  await runCheck();
+});
+
+// 10時
+Deno.cron("morning-check-3", "0 10 * * *", async () => {
+  await runCheck();
+});
 
