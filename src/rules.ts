@@ -3,10 +3,10 @@ export async function getWeatherAlerts(): Promise<string[]> {
   const url =
     "https://www.jma.go.jp/bosai/warning/data/warning/270000.json";
 
-  const res = await fetch(url);
-  const data = await res.json();
+const res = await fetch(url);
+const data = await res.json();
 
-  const areas: string[] = [];
+console.log(JSON.stringify(data, null, 2));
 
   for (const item of data.areaTypes ?? []) {
     for (const area of item.areas ?? []) {
