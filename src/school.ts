@@ -8,8 +8,13 @@ export async function checkSchoolStatus() {
   const now = new Date();
   const hour = now.getHours();
 
-  const has = (list: string[]) =>
-    alerts.some((a) => list.some((l) => a.includes(l)));
+ const has = (list: string[]) =>
+  alerts.some(
+    (a): a is string => typeof a === "string"
+  ) &&
+  alerts
+    .filter((a): a is string => typeof a === "string")
+    .some((a) => list.some((l) => a.includes(l)));
 
   // -------------------------
   // Aルール（最優先）
